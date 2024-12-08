@@ -1,0 +1,1 @@
+# jp-segmentor-extension
