@@ -22,3 +22,9 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 `
 
 setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+chrome.tabs.query({active: true, currentWindow: true},(tabs) => {
+  const tab = tabs[0]
+  if(tab.id) {
+    chrome.tabs.sendMessage(tab.id, {data: "hello"});
+  }
+})
