@@ -1,45 +1,66 @@
 const segmenterJa = new Intl.Segmenter("ja-JP", { granularity: "word" });
 
-const title = document.querySelector('.content--title span');
+const currentUrl = window.location.toString()
 
-// Check if the element exists
-if (title) {
-  // Manipulate the element (e.g., change the text)
-  const text = title.innerText
-  title.innerText = getSeperatedText(segmenterJa, text)
-} else {
-  console.log("Element not found!");
+parseUrl()
+
+function parseUrl() {
+  if (currentUrl.includes("www3.nhk.or.jp")) {
+    parseProviders("NHK")
+  }
 }
 
-const summary = document.querySelector('.content--summary');
-// Check if the element exists
-if (summary) {
-  // Manipulate the element (e.g., change the text)
-  const text = summary.innerText
-  summary.innerText = getSeperatedText(segmenterJa, text)
-} else {
-  console.log("Element not found!");
+chrome.runtime.onMessage.addListener((message) => {
+  parseProviders(message)
+})
+
+function parseProviders(provider) {
+  switch (provider) {
+    case "NHK":
+      parseNHKNews()
+      break
+    default:
+      break
+  }
 }
 
-const bodyTitle = document.querySelectorAll('.body-title');
-bodyTitle.forEach(ele => {
-  const text = ele.innerText
-  ele.innerText = getSeperatedText(segmenterJa, text)
-})
+function parseNHKNews() {
+  const title = document.querySelector('.content--title span');
+  // Check if the element exists
+  if (title) {
+    // Manipulate the element (e.g., change the text)
+    title.innerHTML = getSeperatedText(segmenterJa, title)
+  } else {
+    console.log("title Element not found!");
+  }
 
-const body = document.querySelectorAll('.body-text p');
-body.forEach(ele => {
-  const text = ele.innerText
-  ele.innerText = getSeperatedText(segmenterJa, text)
-})
+  const summary = document.querySelector('.content--summary');
+  // Check if the element exists
+  if (summary) {
+    summary.innerHTML = getSeperatedText(segmenterJa, summary)
+  } else {
+    console.log("summary Element not found!");
+  }
+
+  const bodyTitle = document.querySelectorAll('.body-title');
+  bodyTitle.forEach(ele => {
+    ele.innerHTML = getSeperatedText(segmenterJa, ele)
+  })
+
+  const body = document.querySelectorAll('.body-text p');
+  body.forEach(ele => {
+    ele.innerHTML = getSeperatedText(segmenterJa, ele)
+  })
+}
 
 /**
  * 
  * @param {Intl.Segmenter} segmenter 
- * @param {string} text
+ * @param {Element} element
  * @returns {string}
  */
-function getSeperatedText(segmenter, text) {
+function getSeperatedText(segmenter, element) {
+  const text = element.innerHTML
   const segments = segmenter.segment(text);
   const seperatedText = Array.from(segments).reduce((pre, cur) => {
     if (cur.isWordLike) {
