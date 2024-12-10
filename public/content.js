@@ -2,9 +2,15 @@ const segmenterJa = new Intl.Segmenter("ja-JP", { granularity: "word" });
 
 const currentUrl = window.location.toString()
 
+const delimiter = "&nbsp;&nbsp;"
+
 parseUrl()
 
 function parseUrl() {
+  if (currentUrl.includes("www3.nhk.or.jp/news/easy")) {
+    parseProviders("NHK_EASY")
+    return
+  }
   if (currentUrl.includes("www3.nhk.or.jp")) {
     parseProviders("NHK")
   }
@@ -16,12 +22,25 @@ chrome.runtime.onMessage.addListener((message) => {
 
 function parseProviders(provider) {
   switch (provider) {
+    case "NHK_EASY":
+      parseNHKEasyNews()
+      break
     case "NHK":
       parseNHKNews()
       break
     default:
       break
   }
+}
+
+function parseNHKEasyNews() {
+  const body = document.querySelectorAll('#js-article-body p');
+  body.forEach(ele => {
+    ele.querySelectorAll("span").forEach(spanEle => {
+      spanEle.innerHTML = spanEle.innerHTML + delimiter
+    })
+  })
+
 }
 
 function parseNHKNews() {
@@ -64,7 +83,7 @@ function getSeperatedText(segmenter, element) {
   const segments = segmenter.segment(text);
   const seperatedText = Array.from(segments).reduce((pre, cur) => {
     if (cur.isWordLike) {
-      return pre + cur.segment + " "
+      return pre + cur.segment + delimiter
     }
     return pre + cur.segment
   }, "")
